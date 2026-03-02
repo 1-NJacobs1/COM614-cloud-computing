@@ -3,12 +3,11 @@
 set -x
 
 # script to set up new ansible user and generate and copy new ansible keys
-# if environment variable ANSIBLE_SSH_PASSPHRASE is set, then used in generating the key
+# if variable passed to script, uses that word as a passphrase for the keys
 
-ANSIBLE_KEYS="/ssh-keys/.ssh-ansible"
+ANSIBLE_KEYS="/share/.ssh-ansible"
 ANSIBLE_USER_HOME="/home/ansible"
 ANSIBLE_KEY_PASSPHRASE=""
-
 
 # create ansible user (insecure password)
 # The graphical login managers do not show users with UID below 1000
@@ -21,32 +20,32 @@ if getent passwd | grep -c '^ansible:' > /dev/null ;
     sudo groupadd -f ansible
     sudo groupadd -f sudo   # ubuntu
     sudo groupadd -f wheel  # rhel
-    sudo useradd -m -s /bin/bash  -u 800 --groups sudo,wheel  -g ansible --password "$(mkpasswd $ANSIBLE_ROOT_PASSWORD )"  ansible
+    sudo useradd -m -s /bin/bash  -u 800 --groups sudo,wheel  -g ansible --password "$(mkpasswd minad1234)"  ansible
     sudo echo "%ansible ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ansible
 fi
 
 # only generate once but share among machines
-if ! [ -d "$ANSIBLE_KEYS" ] ; 
-  then
+if ! [ -d "$ANSIBLE_KEYS" ]; then
    echo creating ansible keys for stack in "$ANSIBLE_KEYS"
-   sudo mkdir -p "$ANSIBLE_KEYS"
+   mkdir -p "$ANSIBLE_KEYS"
    
-   if [ -v ANSIBLE_SSH_PASSPHRASE ];
+   if [ $# -ne 0 ]; 
      then
-        ANSIBLE_KEY_PASSPHRASE=$ANSIBLE_SSH_PASSPHRASE 
+        ANSIBLE_KEY_PASSPHRASE=$1 
         echo "using ansible keys with pass phrase" ;
-        sudo ssh-keygen -t rsa -b 4096 -N "$ANSIBLE_KEY_PASSPHRASE" -f "$ANSIBLE_KEYS/id_rsa"
+        echo "remote key passphrase= $ANSIBLE_KEY_PASSPHRASE"
+        ssh-keygen -t rsa -b 4096 -N "$ANSIBLE_KEY_PASSPHRASE" -f "$ANSIBLE_KEYS/id_rsa"
      else
         echo "using ansible keys with no pass phrase" ;
-        sudo ssh-keygen -t rsa -b 4096 -N "" -f "$ANSIBLE_KEYS/id_rsa"
+        ssh-keygen -t rsa -b 4096 -N "" -f "$ANSIBLE_KEYS/id_rsa"
      fi
-
+        
 else
-  echo repo "$ANSIBLE_KEYS" already exists so not regenerating
+   echo repo "$ANSIBLE_KEYS" already exists so not regenerating
 fi
 
 # test if local machine already has keys
-if  ! [ -d "$ANSIBLE_USER_HOME/.ssh" ]
+if sudo bash -c ' ! [ -d "$ANSIBLE_USER_HOME/.ssh" ]' 
  then
    echo copying ansible keys to "$ANSIBLE_USER_HOME/.ssh"
    sudo mkdir -p $ANSIBLE_USER_HOME/.ssh
