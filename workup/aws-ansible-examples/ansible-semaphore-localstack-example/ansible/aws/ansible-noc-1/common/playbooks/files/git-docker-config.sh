@@ -5,7 +5,7 @@
 
 #set -x
 
-DIRECTORY="$HOME/devel/gitrepos"
+DIRECTORY="/home/ansible/devel/gitrepos"
 REPO="COM614-cloud-computing"
 REPO_URL="https://github.com/gallenc/COM614-cloud-computing.git"
 
@@ -35,15 +35,15 @@ echo updated repo in directory $DIRECTORY/$REPO
 
 sudo mkdir -p /opt/docker/compose
 
-sudo ln -sf $DIRECTORY/COM614-cloud-computing/session2/ansible-examples/docker-compose-services /opt/docker/compose/docker-compose-services
+sudo ln -sf $DIRECTORY/COM614-cloud-computing/sessions/session2/ansible-examples/docker-compose-services /opt/docker/compose/docker-compose-services
 
 sudo chown -h ansible:ansible /opt/docker/compose/docker-compose-services
 
-# set up service to start docker compose
+# set up service to start docker compose (already done)
 
-sudo cp /vagrant/docker-compose@.service /etc/systemd/system/docker-compose@.service
+#sudo cp /vagrant/docker-compose@.service /etc/systemd/system/docker-compose@.service
 
-sudo chmod 644 /etc/systemd/system/docker-compose@.service
+#sudo chmod 644 /etc/systemd/system/docker-compose@.service
 
 
 
